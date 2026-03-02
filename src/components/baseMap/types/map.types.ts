@@ -1,6 +1,6 @@
 import type { MapRef } from "react-map-gl";
 
-export type MapLayer = "street" | "dark" | "satellite" | "smooth";
+export type MapLayer = "street" | "dark" | "satellite" | "smooth" | "dark_v10";
 
 export interface MapLayerConfig {
   name: string;

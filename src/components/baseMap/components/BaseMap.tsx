@@ -30,8 +30,6 @@ import {
   IconCloudMinus,
   IconRocket,
   IconCircleDot,
-  IconSteeringWheel,
-  IconFocus2,
 } from "@tabler/icons-react";
 
 import CustomZoomControl from "./CustomZoomControl";
@@ -47,7 +45,7 @@ const BaseMap: React.FC<BaseMapProps> = ({
   onMapRef,
 }) => {
   const mapRef = useRef<MapRef>(null);
-  const [selectedLayer, setSelectedLayer] = useState<MapLayer>("satellite");
+  const [selectedLayer, setSelectedLayer] = useState<MapLayer>("dark_v10");
 
   const mapLayers = useMemo<Record<MapLayer, MapLayerConfig>>(
     () => ({
@@ -187,16 +185,6 @@ const BaseMap: React.FC<BaseMapProps> = ({
         name: "Burbuja / Infantil",
         icon: <IconCircleDot size={20} />,
         style: "mapbox://styles/mapbox/cj7at6m5i3p6v2rmsqf80t6f8",
-      },
-      navigation_guidance_day: {
-        name: "Guía de Ruta Día",
-        icon: <IconSteeringWheel size={20} />,
-        style: "mapbox://styles/mapbox/navigation-guidance-day-v4",
-      },
-      navigation_guidance_night: {
-        name: "Guía de Ruta Noche",
-        icon: <IconFocus2 size={20} />,
-        style: "mapbox://styles/mapbox/navigation-guidance-night-v4",
       },
     }),
     [],

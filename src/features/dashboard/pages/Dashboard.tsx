@@ -5,6 +5,8 @@ import { useBreakpoint } from "@/hooks/useBreakpoints";
 import { LineChartWrapper } from "@/libs/recharts";
 import { useState } from "react";
 import { IconArrowNarrowLeft, IconX } from "@tabler/icons-react";
+import { Marker } from "react-map-gl";
+import MarkerSensor from "@/features/DoorSensor/components/MarkerSensor";
 
 // Ejemplo de uso
 const actividadPuertas = [
@@ -23,7 +25,16 @@ function Dashboard() {
       className={`w-full h-full  ${isMobile ? "flex flex-row" : "grid grid-cols-12"}`}
     >
       <div className="col-span-10 h-full flex flex-col w-full">
-        <BaseMap>{/* Contenido del mapa */}</BaseMap>
+        <BaseMap>
+          <Marker
+            latitude={-42.91486354998348}
+            longitude={-72.71428627459254}
+          >
+            <div>
+              <MarkerSensor />
+            </div>
+          </Marker>
+        </BaseMap>
         <BottomBar
           title="Actividad de Puertas"
           overlays={<div className="bg-100 px-3">Overlays</div>}
@@ -71,7 +82,7 @@ const RightBarDashboard = ({
         </button>
       )}
       <RightBar
-        title="Detalles de Puertas"
+        title="Actividad de Puertas"
         overlays={
           <div className="px-3 py-4  border-b border-border-200">
             <small>Overlays</small>
