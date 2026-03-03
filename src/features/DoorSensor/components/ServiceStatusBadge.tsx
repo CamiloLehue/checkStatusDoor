@@ -5,7 +5,7 @@ interface ServiceStatusBadgeProps {
 }
 
 export function ServiceStatusBadge({ service }: ServiceStatusBadgeProps) {
-  const isOnline = service.is_active && service.status !== "online";
+  const isOnline = service.is_active && service.status === "online";
 
   return (
     <div

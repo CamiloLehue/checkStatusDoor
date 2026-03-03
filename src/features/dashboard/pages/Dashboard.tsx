@@ -12,6 +12,8 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   Tooltip,
@@ -25,6 +27,7 @@ import type { ServicesType } from "@/features/services/types/services.type";
 import { ServiceStatusBadge } from "@/features/DoorSensor/components/ServiceStatusBadge";
 import AlertsCalendar from "@/features/DoorSensor/components/AlertsCalendar";
 import { useHistorySensor } from "@/features/DoorSensor/hooks/useHistorySensor";
+import type { Events } from "@/features/DoorSensor/types/HistorySensor.type";
 
 function Dashboard() {
   const { isMobile } = useBreakpoint();
@@ -32,9 +35,14 @@ function Dashboard() {
   const { data: servicesSensor } = useServices();
   const { data: statusDoors = [] as DoorSensorType[], isLoading } =
     useDoorSensor();
+  const { data: historyEvents = [], isLoading: loadingHistory } =
+    useHistorySensor();
   const mapRef = useRef<MapRef | null>(null);
   const [hasCentered, setHasCentered] = useState(false);
   const [selectedDoorId, setSelectedDoorId] = useState<number | null>(null);
+  const [selectedCalendarDay, setSelectedCalendarDay] = useState<Date | null>(
+    null,
+  );
 
   const flyToSensor = useCallback((door: DoorSensorType) => {
     setSelectedDoorId(door.id);
@@ -113,16 +121,28 @@ function Dashboard() {
                 </div>
               </Marker>
             ))}
-            {!status[0] && <PopUpDoor data={statusDoors[0]} />}
+            {status[0] && <PopUpDoor data={statusDoors[0]} />}
           </BaseMap>
         )}
         <BottomBar
-          title="Monitoreo General"
+          title={
+            selectedCalendarDay
+              ? `Historial — ${selectedCalendarDay.toLocaleDateString("es-CL", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}`
+              : "Monitoreo General"
+          }
           overlays={<div className="bg-100 px-3">Overlays</div>}
         >
           <div className="grid grid-cols-2 divide-x divide-border-200">
             <ServiceStatusChart />
-            <SensorStatusChart doors={statusDoors} />
+            <SensorStatusChart
+              doors={statusDoors}
+              selectedDay={selectedCalendarDay}
+              historyEvents={historyEvents}
+            />
           </div>
         </BottomBar>
       </div>
@@ -131,6 +151,9 @@ function Dashboard() {
           data={statusDoors}
           selectedDoorId={selectedDoorId}
           onSelectDoor={flyToSensor}
+          historyEvents={historyEvents}
+          loadingHistory={loadingHistory}
+          onCalendarDaySelect={setSelectedCalendarDay}
         />
       ) : isOpenRightBar ? (
         <RightBarDashboard
@@ -138,6 +161,9 @@ function Dashboard() {
           data={statusDoors}
           selectedDoorId={selectedDoorId}
           onSelectDoor={flyToSensor}
+          historyEvents={historyEvents}
+          loadingHistory={loadingHistory}
+          onCalendarDaySelect={setSelectedCalendarDay}
         />
       ) : (
         <button
@@ -156,11 +182,17 @@ const RightBarDashboard = ({
   data,
   selectedDoorId,
   onSelectDoor,
+  historyEvents,
+  loadingHistory,
+  onCalendarDaySelect,
 }: {
   setOpenRightBar?: (isOpen: boolean) => void;
   data: DoorSensorType[];
   selectedDoorId: number | null;
   onSelectDoor: (door: DoorSensorType) => void;
+  historyEvents: Events[];
+  loadingHistory: boolean;
+  onCalendarDaySelect: (day: Date | null) => void;
 }) => {
   return (
     <div className="relative col-span-2 z-50 ">
@@ -185,6 +217,9 @@ const RightBarDashboard = ({
           data={data}
           selectedDoorId={selectedDoorId}
           onSelectDoor={onSelectDoor}
+          historyEvents={historyEvents}
+          loadingHistory={loadingHistory}
+          onCalendarDaySelect={onCalendarDaySelect}
         />
       </RightBar>
     </div>
@@ -195,14 +230,17 @@ const ContentRightBar = ({
   data,
   selectedDoorId,
   onSelectDoor,
+  historyEvents,
+  loadingHistory,
+  onCalendarDaySelect,
 }: {
   data: DoorSensorType[];
   selectedDoorId: number | null;
   onSelectDoor: (door: DoorSensorType) => void;
+  historyEvents: Events[];
+  loadingHistory: boolean;
+  onCalendarDaySelect: (day: Date | null) => void;
 }) => {
-  const { data: historyEvents = [], isLoading: loadingHistory } =
-    useHistorySensor();
-
   return (
     <div className="flex flex-col gap-4 p-2">
       <div className="flex flex-col gap-1">
@@ -263,7 +301,11 @@ const ContentRightBar = ({
           Calendario de eventos recientes
         </p>
       </div>
-      <AlertsCalendar events={historyEvents} isLoading={loadingHistory} />
+      <AlertsCalendar
+        events={historyEvents}
+        isLoading={loadingHistory}
+        onDaySelect={onCalendarDaySelect}
+      />
     </div>
   );
 };
@@ -343,9 +385,7 @@ const ServiceStatusChart = () => {
 
   return (
     <div className="flex items-stretch gap-0 h-full w-full overflow-hidden">
-      {/* ── Bloque izquierdo: RadialBar + contadores ── */}
       <div className="flex items-center gap-3 shrink-0 pl-3 pr-5 border-r border-border-200">
-        {/* Gauge radial */}
         <div className="relative flex items-center justify-center">
           <ResponsiveContainer width={120} height={120}>
             <RadialBarChart
@@ -384,7 +424,6 @@ const ServiceStatusChart = () => {
           </div>
         </div>
 
-        {/* Contadores */}
         <div className="flex flex-col gap-2.5">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2.5 w-2.5 shrink-0">
@@ -421,7 +460,6 @@ const ServiceStatusChart = () => {
         </div>
       </div>
 
-      {/* ── Bloque derecho: BarChart por servicio ── */}
       <div className="flex flex-col flex-1 min-w-0 px-3 py-1">
         <span className="text-text-100 text-[10px] uppercase tracking-wide mb-0.5">
           Estado por servicio
@@ -473,57 +511,291 @@ const ServiceStatusChart = () => {
   );
 };
 
-/* ── Tooltip personalizado ── */
-const CustomBarTooltip = ({
+const ECG_COLORS = ["#f87171", "#60a5fa", "#a78bfa", "#fb923c", "#34d399"];
+
+const CustomEcgTooltip = ({
   active,
   payload,
   label,
 }: {
   active?: boolean;
-  payload?: { value: number; payload: { abierto: boolean } }[];
+  payload?: { name: string; value: number; color: string }[];
   label?: string;
 }) => {
   if (!active || !payload?.length) return null;
-  const isOpen = payload[0]?.payload?.abierto;
   return (
     <div className="bg-bg-100/95 border border-border-200 rounded-lg px-3 py-2 shadow-xl backdrop-blur-sm">
-      <p className="text-text-100 text-xs font-semibold mb-1 truncate max-w-32">
-        {label}
-      </p>
-      <span
-        className={`text-[11px] font-bold uppercase tracking-wide ${
-          isOpen ? "text-red-400" : "text-green-400"
-        }`}
-      >
-        {isOpen ? "● Abierto" : "● Cerrado"}
-      </span>
+      <p className="text-text-100 text-xs font-semibold mb-1.5">{label}</p>
+      {payload.map((p, i) => (
+        <div key={i} className="flex items-center gap-2 text-[11px]">
+          <span style={{ color: p.color }}>●</span>
+          <span className="text-text-200">
+            {p.name}:{" "}
+            <span className="font-bold" style={{ color: p.color }}>
+              {p.value === 1 ? "Abierto" : "Cerrado"}
+            </span>
+          </span>
+        </div>
+      ))}
     </div>
   );
 };
 
-const SensorStatusChart = ({ doors }: { doors: DoorSensorType[] }) => {
-  const abiertos = doors.filter((d) => d.open_status === "abierto").length;
-  const cerrados = doors.length - abiertos;
-  const total = doors.length;
-  const pctCerrado = total > 0 ? Math.round((cerrados / total) * 100) : 0;
+const SensorStatusChart = ({
+  doors,
+  selectedDay = null,
+  historyEvents = [],
+}: {
+  doors: DoorSensorType[];
+  selectedDay?: Date | null;
+  historyEvents?: Events[];
+}) => {
+  if (selectedDay) {
+    const dayEvents = historyEvents.filter((e) => {
+      const d = new Date(e.timestamp);
+      return (
+        d.getDate() === selectedDay.getDate() &&
+        d.getMonth() === selectedDay.getMonth() &&
+        d.getFullYear() === selectedDay.getFullYear()
+      );
+    });
+
+    const isOpen = (e: Events) =>
+      e.status === 1 || e.estado?.toLowerCase() === "open";
+
+    const totalAperturas = dayEvents.filter(isOpen).length;
+    const totalCierres = dayEvents.length - totalAperturas;
+    const total = dayEvents.length;
+    const pctAper = total > 0 ? Math.round((totalAperturas / total) * 100) : 0;
+
+    const radialHistData = [
+      { name: "bg", value: 100, fill: "#4ade8022" },
+      { name: "Aperturas", value: pctAper, fill: "url(#radialHistRed)" },
+    ];
+
+    const daySorted = [...dayEvents].sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+    const daySensorKeys = [
+      ...new Set(daySorted.map((e) => String(e.id_device))),
+    ];
+    const daySensorLabel: Record<string, string> = {};
+    daySorted.forEach((e) => {
+      daySensorLabel[String(e.id_device)] = e.nombre;
+    });
+    const dayCurState: Record<string, number> = {};
+    daySensorKeys.forEach((k) => (dayCurState[k] = 0));
+    const dayEcgData = daySorted.map((e) => {
+      const k = String(e.id_device);
+      dayCurState[k] = isOpen(e) ? 1 : 0;
+      const t = new Date(e.timestamp);
+      const label = `${t.getHours().toString().padStart(2, "0")}:${t.getMinutes().toString().padStart(2, "0")}`;
+      return {
+        t: label,
+        ...Object.fromEntries(daySensorKeys.map((sk) => [sk, dayCurState[sk]])),
+      };
+    });
+
+    return (
+      <div className="flex items-stretch gap-0 h-full w-full overflow-hidden">
+        <div className="flex items-center gap-3 shrink-0 pl-3 pr-5 border-r border-border-200">
+          <div className="relative flex items-center justify-center">
+            <ResponsiveContainer width={120} height={120}>
+              <RadialBarChart
+                cx="50%"
+                cy="50%"
+                innerRadius="58%"
+                outerRadius="92%"
+                startAngle={210}
+                endAngle={-30}
+                data={radialHistData}
+                barSize={3}
+              >
+                <defs>
+                  <linearGradient
+                    id="radialHistRed"
+                    x1="0"
+                    y1="0"
+                    x2="1"
+                    y2="0"
+                  >
+                    <stop offset="0%" stopColor="#f87171" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#fb923c" stopOpacity={1} />
+                  </linearGradient>
+                </defs>
+                <RadialBar
+                  dataKey="value"
+                  cornerRadius={8}
+                  background={false}
+                  isAnimationActive
+                />
+              </RadialBarChart>
+            </ResponsiveContainer>
+            <div className="absolute flex flex-col items-center pointer-events-none select-none">
+              <span className="text-2xl font-bold text-text-100 leading-none">
+                {pctAper}
+                <span className="text-xs text-text-300">%</span>
+              </span>
+              <span className="text-[9px] text-text-300 uppercase tracking-wide">
+                apert.
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2.5">
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-red-500 shrink-0" />
+              <div className="flex flex-col leading-none">
+                <span className="text-xl font-bold text-red-400">
+                  {totalAperturas}
+                </span>
+                <span className="text-[9px] text-text-200 uppercase tracking-wide">
+                  Apert.
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-green-500 shrink-0" />
+              <div className="flex flex-col leading-none">
+                <span className="text-xl font-bold text-green-400">
+                  {totalCierres}
+                </span>
+                <span className="text-[9px] text-text-200 uppercase tracking-wide">
+                  Cierres
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-border-200 shrink-0" />
+              <div className="flex flex-col leading-none">
+                <span className="text-xl font-bold text-text-200">{total}</span>
+                <span className="text-[9px] text-text-200 uppercase tracking-wide">
+                  Total
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col flex-1 min-w-0 px-3 py-1">
+          <div className="flex items-center justify-between mb-0.5">
+            <span className="text-text-100 text-[10px] uppercase tracking-wide">
+              Actividad del día
+            </span>
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              {daySensorKeys.map((k, i) => (
+                <span
+                  key={k}
+                  className="text-[9px] truncate max-w-20"
+                  style={{ color: ECG_COLORS[i % ECG_COLORS.length] }}
+                >
+                  ● {daySensorLabel[k]}
+                </span>
+              ))}
+            </div>
+          </div>
+          {dayEcgData.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center text-text-300 text-xs">
+              Sin eventos ese día
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={dayEcgData}
+                margin={{ top: 6, right: 4, bottom: 0, left: -28 }}
+              >
+                <defs>
+                  {daySensorKeys.map((k, i) => (
+                    <linearGradient
+                      key={k}
+                      id={`dayEcgFill${i}`}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor={ECG_COLORS[i % ECG_COLORS.length]}
+                        stopOpacity={0.35}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor={ECG_COLORS[i % ECG_COLORS.length]}
+                        stopOpacity={0.03}
+                      />
+                    </linearGradient>
+                  ))}
+                </defs>
+                <XAxis
+                  dataKey="t"
+                  tick={{ fill: "var(--color-text-300, #9ca3af)", fontSize: 8 }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  hide
+                  domain={[0, 1]}
+                  allowDecimals={false}
+                  ticks={[0, 1]}
+                />
+                <Tooltip
+                  content={<CustomEcgTooltip />}
+                  cursor={{ stroke: "rgba(255,255,255,0.12)", strokeWidth: 1 }}
+                />
+                {daySensorKeys.map((k, i) => (
+                  <Area
+                    key={k}
+                    type="stepAfter"
+                    dataKey={k}
+                    name={daySensorLabel[k]}
+                    stroke={ECG_COLORS[i % ECG_COLORS.length]}
+                    strokeWidth={1.5}
+                    fill={`url(#dayEcgFill${i})`}
+                    dot={false}
+                    activeDot={{
+                      r: 3,
+                      fill: ECG_COLORS[i % ECG_COLORS.length],
+                      strokeWidth: 0,
+                    }}
+                    isAnimationActive
+                  />
+                ))}
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  const isOpenEvent30d = (e: Events) =>
+    e.status === 1 ||
+    e.estado?.toLowerCase() === "abierto" ||
+    e.estado?.toLowerCase() === "open";
+  const totalApert = historyEvents.filter(isOpenEvent30d).length;
+  const totalCierr = historyEvents.length - totalApert;
+  const totalEvts = historyEvents.length;
+  const pctAbierto =
+    totalEvts > 0 ? Math.round((totalApert / totalEvts) * 100) : 0;
+
+  /* Estado live actual de puertas (para el ping de alerta) */
+  const isOpenDoor = (d: DoorSensorType) => {
+    const s = d.open_status?.toLowerCase();
+    return s === "abierto" || s === "open";
+  };
+  const hayAbiertoAhora = doors.some(isOpenDoor);
 
   const radialData = [
-    { name: "bg", value: 100, fill: "#f8717122" },
-    { name: "Cerrados", value: pctCerrado, fill: "url(#radialGreen)" },
+    { name: "bg", value: 100, fill: "#4ade8022" },
+    { name: "Aperturas", value: pctAbierto, fill: "url(#radialGreen)" },
   ];
-
-  const barData = doors.map((d) => ({
-    nombre: d.name.length > 9 ? d.name.slice(0, 9) + "…" : d.name,
-    nombreCompleto: d.name,
-    valor: 1,
-    abierto: d.open_status === "abierto",
-  }));
 
   return (
     <div className="flex items-stretch gap-0 h-full w-full overflow-hidden">
-      {/* ── Bloque izquierdo: RadialBar + contadores ── */}
       <div className="flex items-center gap-3 shrink-0 pl-3 pr-5 border-r border-border-200">
-        {/* Gauge radial */}
         <div className="relative flex items-center justify-center">
           <ResponsiveContainer width={120} height={120}>
             <RadialBarChart
@@ -538,8 +810,8 @@ const SensorStatusChart = ({ doors }: { doors: DoorSensorType[] }) => {
             >
               <defs>
                 <linearGradient id="radialGreen" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#4ade80" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#22d3ee" stopOpacity={1} />
+                  <stop offset="0%" stopColor="#f87171" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#fb923c" stopOpacity={1} />
                 </linearGradient>
               </defs>
               <RadialBar
@@ -550,103 +822,184 @@ const SensorStatusChart = ({ doors }: { doors: DoorSensorType[] }) => {
               />
             </RadialBarChart>
           </ResponsiveContainer>
-          {/* Número central */}
           <div className="absolute flex flex-col items-center pointer-events-none select-none">
             <span className="text-2xl font-bold text-text-100 leading-none">
-              {pctCerrado}
+              {pctAbierto}
               <span className="text-xs text-text-300">%</span>
             </span>
             <span className="text-[9px] text-text-300 uppercase tracking-wide">
-              cerrados
+              apert. 30d
             </span>
           </div>
         </div>
 
-        {/* Contadores */}
         <div className="flex flex-col gap-2.5">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2.5 w-2.5 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-400" />
+              {hayAbiertoAhora && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-50" />
+              )}
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-400" />
             </span>
             <div className="flex flex-col leading-none">
-              <span className="text-xl font-bold text-green-400">
-                {cerrados}
+              <span className="text-xl font-bold text-red-400">
+                {totalApert}
               </span>
               <span className="text-[9px] text-text-200 uppercase tracking-wide">
-                Cerrados
+                Apert.
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-red-500 shrink-0" />
+            <span className="h-2.5 w-2.5 rounded-full bg-green-500 shrink-0" />
             <div className="flex flex-col leading-none">
-              <span className="text-xl font-bold text-red-400">{abiertos}</span>
+              <span className="text-xl font-bold text-green-400">
+                {totalCierr}
+              </span>
               <span className="text-[9px] text-text-200 uppercase tracking-wide">
-                Abiertos
+                Cierres
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-border-200 shrink-0" />
             <div className="flex flex-col leading-none">
-              <span className="text-xl font-bold text-text-200">{total}</span>
+              <span className="text-xl font-bold text-text-200">
+                {totalEvts}
+              </span>
               <span className="text-[9px] text-text-200 uppercase tracking-wide">
-                Total
+                Eventos
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Bloque derecho: BarChart por sensor ── */}
-      <div className="flex flex-col flex-1 min-w-0 px-3 py-1">
-        <span className="text-text-100 text-[10px] uppercase tracking-wide mb-0.5">
-          Estado por sensor
-        </span>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={barData}
-            barCategoryGap="28%"
-            margin={{ top: 4, right: 4, bottom: 0, left: -28 }}
-          >
-            <defs>
-              <linearGradient id="sbarGreen" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#4ade80" stopOpacity={1} />
-                <stop offset="100%" stopColor="#16a01a" stopOpacity={0.6} />
-              </linearGradient>
-              <linearGradient id="sbarRed" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f87171" stopOpacity={1} />
-                <stop offset="100%" stopColor="#b91c1c" stopOpacity={0.6} />
-              </linearGradient>
-            </defs>
-            <XAxis
-              dataKey="nombre"
-              tick={{ fill: "var(--color-text-300, #9ca3af)", fontSize: 10 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis hide domain={[0, 1]} />
-            <Tooltip
-              content={<CustomBarTooltip />}
-              cursor={{ fill: "rgba(255,255,255,0.04)", radius: 6 }}
-            />
-            <Bar
-              dataKey="valor"
-              radius={[6, 6, 3, 3]}
-              maxBarSize={10}
-              isAnimationActive
-            >
-              {barData.map((entry, i) => (
-                <Cell
-                  key={`cell-${i}`}
-                  fill={entry.abierto ? "url(#sbarRed)" : "url(#sbarGreen)"}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      {(() => {
+        const sorted = [...historyEvents].sort(
+          (a, b) =>
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+        );
+        const sensorKeys = [...new Set(sorted.map((e) => String(e.id_device)))];
+        const sensorLabel: Record<string, string> = {};
+        sorted.forEach((e) => {
+          sensorLabel[String(e.id_device)] = e.nombre;
+        });
+        const curState: Record<string, number> = {};
+        sensorKeys.forEach((k) => (curState[k] = 0));
+        const ecgData = sorted.map((e) => {
+          const k = String(e.id_device);
+          curState[k] =
+            e.status === 1 || e.estado?.toLowerCase() === "open" ? 1 : 0;
+          const t = new Date(e.timestamp);
+          const label = `${t.getDate().toString().padStart(2, "0")}/${(t.getMonth() + 1).toString().padStart(2, "0")} ${t
+            .getHours()
+            .toString()
+            .padStart(2, "0")}:${t.getMinutes().toString().padStart(2, "0")}`;
+          return {
+            t: label,
+            ...Object.fromEntries(sensorKeys.map((sk) => [sk, curState[sk]])),
+          };
+        });
+
+        return (
+          <div className="flex flex-col flex-1 min-w-0 px-3 py-1">
+            <div className="flex items-center justify-between mb-0.5">
+              <span className="text-text-100 text-[10px] uppercase tracking-wide">
+                Actividad en el tiempo
+              </span>
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                {sensorKeys.map((k, i) => (
+                  <span
+                    key={k}
+                    className="text-[9px] truncate max-w-20"
+                    style={{ color: ECG_COLORS[i % ECG_COLORS.length] }}
+                  >
+                    ● {sensorLabel[k]}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {ecgData.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center text-text-300 text-xs">
+                Sin historial registrado
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={ecgData}
+                  margin={{ top: 6, right: 4, bottom: 0, left: -28 }}
+                >
+                  <defs>
+                    {sensorKeys.map((k, i) => (
+                      <linearGradient
+                        key={k}
+                        id={`ecgFill${i}`}
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stopColor={ECG_COLORS[i % ECG_COLORS.length]}
+                          stopOpacity={0.35}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor={ECG_COLORS[i % ECG_COLORS.length]}
+                          stopOpacity={0.03}
+                        />
+                      </linearGradient>
+                    ))}
+                  </defs>
+                  <XAxis
+                    dataKey="t"
+                    tick={{
+                      fill: "var(--color-text-300, #9ca3af)",
+                      fontSize: 8,
+                    }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    hide
+                    domain={[0, 1]}
+                    allowDecimals={false}
+                    ticks={[0, 1]}
+                  />
+                  <Tooltip
+                    content={<CustomEcgTooltip />}
+                    cursor={{
+                      stroke: "rgba(255,255,255,0.12)",
+                      strokeWidth: 1,
+                    }}
+                  />
+                  {sensorKeys.map((k, i) => (
+                    <Area
+                      key={k}
+                      type="stepAfter"
+                      dataKey={k}
+                      name={sensorLabel[k]}
+                      stroke={ECG_COLORS[i % ECG_COLORS.length]}
+                      strokeWidth={1.5}
+                      fill={`url(#ecgFill${i})`}
+                      dot={false}
+                      activeDot={{
+                        r: 3,
+                        fill: ECG_COLORS[i % ECG_COLORS.length],
+                        strokeWidth: 0,
+                      }}
+                      isAnimationActive
+                    />
+                  ))}
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 };

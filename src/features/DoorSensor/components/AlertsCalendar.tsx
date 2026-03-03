@@ -13,6 +13,7 @@ import type { Events } from "../types/HistorySensor.type";
 interface AlertsCalendarProps {
   events?: Events[];
   isLoading?: boolean;
+  onDaySelect?: (day: Date | null) => void;
 }
 
 const monthNames = [
@@ -33,9 +34,15 @@ const monthNames = [
 const AlertsCalendar: React.FC<AlertsCalendarProps> = ({
   events = [],
   isLoading = false,
+  onDaySelect,
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+
+  const handleSelectDay = (day: Date | null) => {
+    setSelectedDay(day);
+    onDaySelect?.(day);
+  };
 
   const getDaysInMonth = (date: Date) =>
     new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -47,14 +54,14 @@ const AlertsCalendar: React.FC<AlertsCalendarProps> = ({
     setCurrentDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
     );
-    setSelectedDay(null);
+    handleSelectDay(null);
   };
 
   const nextMonth = () => {
     setCurrentDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
     );
-    setSelectedDay(null);
+    handleSelectDay(null);
   };
 
   const daysInMonth = getDaysInMonth(currentDate);
@@ -148,7 +155,7 @@ const AlertsCalendar: React.FC<AlertsCalendarProps> = ({
                 key={day}
                 disabled={!hasEvents}
                 onClick={() =>
-                  setSelectedDay(
+                  handleSelectDay(
                     new Date(
                       currentDate.getFullYear(),
                       currentDate.getMonth(),
@@ -217,7 +224,7 @@ const AlertsCalendar: React.FC<AlertsCalendarProps> = ({
               </span>
             </h5>
             <button
-              onClick={() => setSelectedDay(null)}
+              onClick={() => handleSelectDay(null)}
               className="text-text-100 hover:text-text-100 p-1 hover:bg-bg-300 rounded transition-colors"
             >
               <IconX size={14} stroke={1.5} />
