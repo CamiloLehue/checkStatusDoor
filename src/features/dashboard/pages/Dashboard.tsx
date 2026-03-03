@@ -258,8 +258,12 @@ const ContentRightBar = ({
           );
         })}
       </div>
+      <div>
+        <p className="text-text-100  text-xs uppercase tracking-wide px-1 ">
+          Calendario de eventos recientes
+        </p>
+      </div>
       <AlertsCalendar events={historyEvents} isLoading={loadingHistory} />
-     
     </div>
   );
 };
