@@ -34,7 +34,10 @@ function Dashboard() {
   const flyToSensor = useCallback((door: DoorSensorType) => {
     setSelectedDoorId(door.id);
     mapRef.current?.flyTo({
-      center: [parseFloat(door.center.longitude), parseFloat(door.center.latitude)],
+      center: [
+        parseFloat(door.center.longitude),
+        parseFloat(door.center.latitude),
+      ],
       zoom: 17,
       duration: 900,
     });
@@ -90,12 +93,13 @@ function Dashboard() {
                 latitude={parseFloat(door.center.latitude)}
                 longitude={parseFloat(door.center.longitude)}
               >
-                <div>
+                <div className="z-9999">
                   <MarkerSensor
                     door={door}
                     isSelected={selectedDoorId === door.id}
                     onSelect={() => flyToSensor(door)}
                   />
+                  
                 </div>
               </Marker>
             ))}
@@ -164,7 +168,8 @@ const RightBarDashboard = ({
         </button>
       )}
       <RightBar
-        title="Actividad de Puertas"
+        title="Actividad"
+        subTitle="Monitoreo de sensores"
         overlays={
           <div className="px-3 py-4  border-b border-border-200">
             <small>Overlays</small>
@@ -190,12 +195,18 @@ const ContentRightBar = ({
   selectedDoorId: number | null;
   onSelectDoor: (door: DoorSensorType) => void;
 }) => {
-  const { data: services, isLoading: loadingServices, isError: errorServices } = useServices();
+  const {
+    data: services,
+    isLoading: loadingServices,
+    isError: errorServices,
+  } = useServices();
 
   return (
     <div className="flex flex-col gap-4 p-2">
       <div className="flex flex-col gap-1">
-        <p className="text-text-200 text-xs uppercase tracking-wide px-1 mb-1">Sensores</p>
+        <p className="text-text-100  text-xs uppercase tracking-wide px-1 mb-1">
+          Sensores
+        </p>
         {data.map((door) => {
           const isOpen = door.open_status === "Open";
           const isSelected = selectedDoorId === door.id;
@@ -203,24 +214,29 @@ const ContentRightBar = ({
             <button
               key={door.id}
               onClick={() => onSelectDoor(door)}
-              className={`bg-bg-200 relative overflow-hidden transition-all duration-300 rounded-lg py-2 px-4 flex justify-between items-center text-left w-full
+              className={`bg-bg-200 relative overflow-hidden transition-all duration-300 rounded py-2 px-4 flex justify-between items-center text-left w-full
                 ${
                   isSelected
-                    ? "ring-1 ring-bg-400/50 bg-bg-300"
+                    ? "bg-bg-100 border-b border-border-200"
                     : "hover:bg-bg-300"
                 }`}
             >
               <div className="flex flex-col min-w-0">
                 <small className="font-bold truncate">{door.name}</small>
+                <small className="text-xs font-bold">{door.updatedAt}</small>
+
                 <small className="text-text-200 truncate">
                   {door.location_description}
                 </small>
-                <small className={`font-semibold text-[10px] ${
-                  isOpen ? "text-red-400" : "text-green-400"
-                }`}>
+                <small
+                  className={`font-semibold text-[10px] ${
+                    isOpen ? "text-red-400" : "text-green-400"
+                  }`}
+                >
                   {isOpen ? "Abierto" : "Cerrado"}
                 </small>
               </div>
+
               <span className="relative flex h-3 w-3 shrink-0 ml-2">
                 {!isOpen && (
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60" />
@@ -243,7 +259,9 @@ const ContentRightBar = ({
 
       {/* Servicios */}
       <div className="flex flex-col gap-1">
-        <p className="text-text-200 text-xs uppercase tracking-wide px-1 mb-1">Servicios</p>
+        <p className="text-text-100 text-xs uppercase tracking-wide px-1 mb-1">
+          Servicios
+        </p>
         {loadingServices && (
           <div className="flex items-center gap-2 text-text-300 text-xs px-1 py-1">
             <IconLoader2 size={13} className="animate-spin" />
@@ -251,18 +269,28 @@ const ContentRightBar = ({
           </div>
         )}
         {errorServices && (
-          <p className="text-red-400 text-xs px-1">No se pudieron cargar los servicios.</p>
+          <p className="text-red-400 text-xs px-1">
+            No se pudieron cargar los servicios.
+          </p>
         )}
-        {!loadingServices && !errorServices && services && services.length === 0 && (
-          <p className="text-text-300 text-xs px-1">Sin servicios registrados.</p>
-        )}
-        {!loadingServices && !errorServices && services && services.length > 0 && (
-          <div className="flex flex-col gap-1.5">
-            {services.map((service) => (
-              <ServiceStatusBadge key={service.id} service={service} />
-            ))}
-          </div>
-        )}
+        {!loadingServices &&
+          !errorServices &&
+          services &&
+          services.length === 0 && (
+            <p className="text-text-300 text-xs px-1">
+              Sin servicios registrados.
+            </p>
+          )}
+        {!loadingServices &&
+          !errorServices &&
+          services &&
+          services.length > 0 && (
+            <div className="flex flex-col gap-1.5 h-0 overflow-y-auto min-h-142">
+              {services.map((service) => (
+                <ServiceStatusBadge key={service.id} service={service} />
+              ))}
+            </div>
+          )}
       </div>
     </div>
   );

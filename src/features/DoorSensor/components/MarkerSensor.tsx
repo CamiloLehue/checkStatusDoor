@@ -40,8 +40,8 @@ function MarkerSensor({ door, isSelected, onSelect }: MarkerSensorProps) {
         </div>
       </button>
 
-      {openModal && (
-        <div className="absolute inset-0 z-200 min-w-xs">
+      { (
+        <div className="absolute -bottom-50 z-500 min-w-2xl">
           <ModalSensor door={door} onClose={() => setOpenModal(false)} />
         </div>
       )}
@@ -92,21 +92,21 @@ const ModalSensor = ({
         aria-modal="true"
         aria-label="Detalles del sensor de puerta"
         ref={modalRef}
-        className="w-full max-w-xs rounded bg-linear-30 from-bg-100 to-bg-100 shadow-lg p-4"
+        className="w-full max-w-xl  rounded bg-linear-30 from-bg-100/20 backdrop-blur-sm to-bg-100 shadow-lg p-4"
       >
         <div className="flex justify-between items-center border-b border-border-200 pb-1">
           <h3 className="text-text-100">{door.name}</h3>
           <button
             ref={closeBtnRef}
             onClick={onClose}
-            className="text-text-200 outline outline-transparent"
+            className="hidden text-text-200 outline outline-transparent"
             aria-label="Cerrar"
           >
             <IconX size={20} stroke={1.5} />
           </button>
         </div>
 
-        <div className="flex flex-col gap-2 mt-2">
+        <div className="grid grid-cols-2 gap-2 mt-2">
           <div className="flex justify-between items-center">
             <p className="text-text-200 text-xs">Estado</p>
             <p className={`text-xs font-semibold ${statusColor}`}>{statusText}</p>
@@ -155,7 +155,7 @@ const ModalSensor = ({
           )}
 
           {!isLoading && !isError && services && services.length > 0 && (
-            <div className="flex flex-col gap-1.5">
+            <div className="grid grid-cols-2 gap-1.5">
               {services.map((service) => (
                 <ServiceStatusBadge key={service.id} service={service} />
               ))}
