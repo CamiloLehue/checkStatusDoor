@@ -16,7 +16,7 @@ function Header({
 }) {
   const { isMobile } = useBreakpoint();
   return (
-    <header className="max-w-7xl h-10 mx-auto rounded-xl shadow bg-bg-100  text-text-100 w-full z-60 flex items-center relative">
+    <header className="max-w-7xl h-10 mx-auto rounded-xl  bg-bg-100  text-text-100 w-full z-60 flex items-center relative">
       <div className="w-full flex items-center justify-between ">
         <div className="px-5 flex gap-1">
           <h4 className="font-bold text-text-200">

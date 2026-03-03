@@ -51,8 +51,8 @@
   :root {
     /* Fondos (Backgrounds) */
     --bg-100: #f2f2f2;
-    --bg-200: #e7e7e7;
-    --bg-300: #ffffff;
+    --bg-200: #ffffff;
+    --bg-300: #f7f7f7;
     --bg-400: #000000;
 
     /* Interacción */
@@ -63,9 +63,9 @@
     --brand-200: #ff4b4b;
 
     /* Textos */
-    --text-100: #1f2937;
-    --text-200: #0a2955;
-    --text-300: #9ca3af;
+    --text-100: #242424;
+    --text-200: #454545;
+    --text-300: #5f5f5f;
     --text-400: #f2f2f2;
 
     /* Bordes y Separadores */
@@ -75,10 +75,10 @@
 
   .dark {
     /* Fondos (Backgrounds) */
-    --bg-100: #060c0c;
-    --bg-200: #292c33;
-    --bg-300: #373a42;
-    --bg-400: #dce0e4;
+    --bg-100: #161617;
+    --bg-200: #3f3f40;
+    --bg-300: #4a4a4b;
+    --bg-400: #ffffff;
 
     /* Interacción */
     --bg-hover: #101a1a;
@@ -166,9 +166,8 @@ body {
   /* font-family: "Space Grotesk", sans-serif; */
 }
 
-.font-secondary{
-    font-family: "La Belle Aurore", cursive;
-
+.font-secondary {
+  font-family: "La Belle Aurore", cursive;
 }
 
 /* Estilo general para el scroll */

@@ -1,15 +1,11 @@
-
-
-export interface DoorSensorType {
+export interface ServicesType {
   id: number;
   center_id: number;
-  id_device: number;
   name: string;
+  type: string;
+  ip_address: string;
   location_description: string;
-  sensor_type: string;
-  open_status: string;
   status: string;
-  last_seen: null;
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -30,11 +26,3 @@ export interface Center {
   createdAt: string;
   updatedAt: string;
 }
-
-
-// nombre: nombre_centro,
-// status: msg.payload,
-// latitud: latitud,
-// longitud: longitud,
-// estado: estado,
-// timestamp: new Date()
