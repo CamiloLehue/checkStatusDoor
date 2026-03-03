@@ -2,7 +2,6 @@ import { IconAnalyze, IconLoader2, IconX } from "@tabler/icons-react";
 import "./style.css";
 import { useEffect, useRef, useState } from "react";
 import { useServices } from "@/features/services/hooks/useServices";
-import { ServiceStatusBadge } from "./ServiceStatusBadge";
 import type { DoorSensorType } from "@/features/DoorSensor/types/DoorSensor.type";
 
 interface MarkerSensorProps {
@@ -40,8 +39,8 @@ function MarkerSensor({ door, isSelected, onSelect }: MarkerSensorProps) {
         </div>
       </button>
 
-      { (
-        <div className="absolute -bottom-50 z-500 min-w-2xl">
+      {openModal && (
+        <div className="absolute inset-0 z-200 min-w-2xl">
           <ModalSensor door={door} onClose={() => setOpenModal(false)} />
         </div>
       )}
@@ -92,75 +91,84 @@ const ModalSensor = ({
         aria-modal="true"
         aria-label="Detalles del sensor de puerta"
         ref={modalRef}
-        className="w-full max-w-xl  rounded bg-linear-30 from-bg-100/20 backdrop-blur-sm to-bg-100 shadow-lg p-4"
+        className="w-full grid grid-cols-2 gap-5 rounded bg-linear-30 from-bg-100 to-bg-100 shadow-lg p-4"
       >
-        <div className="flex justify-between items-center border-b border-border-200 pb-1">
-          <h3 className="text-text-100">{door.name}</h3>
-          <button
-            ref={closeBtnRef}
-            onClick={onClose}
-            className="hidden text-text-200 outline outline-transparent"
-            aria-label="Cerrar"
-          >
-            <IconX size={20} stroke={1.5} />
-          </button>
+        <div className="">
+          <img src="https://rest.wisensor.cl/public/imgCentros/1.jpeg" alt="" />
         </div>
+        <div>
+          <div className="flex justify-between items-center border-b border-border-200 pb-1">
+            <h3 className="text-text-100">{door.name}</h3>
+            <button
+              ref={closeBtnRef}
+              onClick={onClose}
+              className="text-text-200 outline outline-transparent"
+              aria-label="Cerrar"
+            >
+              <IconX size={20} stroke={1.5} />
+            </button>
+          </div>
 
-        <div className="grid grid-cols-2 gap-2 mt-2">
-          <div className="flex justify-between items-center">
-            <p className="text-text-200 text-xs">Estado</p>
-            <p className={`text-xs font-semibold ${statusColor}`}>{statusText}</p>
-          </div>
-          <div className="flex justify-between items-center">
-            <p className="text-text-200 text-xs">Ubicación</p>
-            <p className="text-text-100 text-xs">{door.location_description}</p>
-          </div>
-          <div className="flex justify-between items-center">
-            <p className="text-text-200 text-xs">Latitud</p>
-            <p className="text-text-100 text-xs">{door.center.latitude}</p>
-          </div>
-          <div className="flex justify-between items-center">
-            <p className="text-text-200 text-xs">Longitud</p>
-            <p className="text-text-100 text-xs">{door.center.longitude}</p>
-          </div>
-          <div className="flex justify-between items-center">
-            <p className="text-text-200 text-xs">Centro</p>
-            <p className="text-text-100 text-xs">{door.center.name}</p>
-          </div>
-        </div>
-
-        {/* Sección de servicios */}
-        <div className="mt-3 pt-2 border-t border-border-200">
-          <p className="text-text-200 text-xs uppercase tracking-wide mb-2">
-            Servicios
-          </p>
-
-          {isLoading && (
-            <div className="flex items-center gap-2 text-text-300 text-xs py-1">
-              <IconLoader2 size={14} className="animate-spin" />
-              Cargando servicios…
+          <div className="flex flex-col gap-2 mt-2">
+            <div className="flex justify-between items-center">
+              <p className="text-text-200 text-xs">Estado</p>
+              <p className={`text-xs font-semibold ${statusColor}`}>
+                {statusText}
+              </p>
             </div>
-          )}
+            <div className="flex justify-between items-center">
+              <p className="text-text-200 text-xs">Ubicación</p>
+              <p className="text-text-100 text-xs">
+                {door.location_description}
+              </p>
+            </div>
+            <div className="flex justify-between items-center">
+              <p className="text-text-200 text-xs">Latitud</p>
+              <p className="text-text-100 text-xs">{door.center.latitude}</p>
+            </div>
+            <div className="flex justify-between items-center">
+              <p className="text-text-200 text-xs">Longitud</p>
+              <p className="text-text-100 text-xs">{door.center.longitude}</p>
+            </div>
+            <div className="flex justify-between items-center">
+              <p className="text-text-200 text-xs">Centro</p>
+              <p className="text-text-100 text-xs">{door.center.name}</p>
+            </div>
+          </div>
 
-          {isError && (
-            <p className="text-red-400 text-xs py-1">
-              No se pudieron cargar los servicios.
+          {/* Sección de servicios */}
+          <div className="mt-3 pt-2 border-t border-border-200">
+            <p className="text-text-200 text-xs uppercase tracking-wide mb-2">
+              Servicios
             </p>
-          )}
 
-          {!isLoading && !isError && services && services.length === 0 && (
-            <p className="text-text-300 text-xs py-1">
-              Sin servicios registrados.
-            </p>
-          )}
+            {isLoading && (
+              <div className="flex items-center gap-2 text-text-300 text-xs py-1">
+                <IconLoader2 size={14} className="animate-spin" />
+                Cargando servicios…
+              </div>
+            )}
 
-          {!isLoading && !isError && services && services.length > 0 && (
-            <div className="grid grid-cols-2 gap-1.5">
+            {isError && (
+              <p className="text-red-400 text-xs py-1">
+                No se pudieron cargar los servicios.
+              </p>
+            )}
+
+            {!isLoading && !isError && services && services.length === 0 && (
+              <p className="text-text-300 text-xs py-1">
+                Sin servicios registrados.
+              </p>
+            )}
+
+            {/* {!isLoading && !isError && services && services.length > 0 && (
+            <div className="flex flex-col gap-1.5">
               {services.map((service) => (
                 <ServiceStatusBadge key={service.id} service={service} />
               ))}
             </div>
-          )}
+          )} */}
+          </div>
         </div>
       </div>
     </div>

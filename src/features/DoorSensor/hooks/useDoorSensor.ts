@@ -8,7 +8,7 @@ export function useDoorSensor() {
         queryFn: () => doorSensorService.getDoorSensors(),
         refetchOnWindowFocus: false,
         refetchOnMount: false,
-        refetchInterval: 30 * 1000,
+        refetchInterval: 5 * 1000,
         refetchIntervalInBackground: false,
     });
 }
