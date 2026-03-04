@@ -26,7 +26,7 @@ function Template() {
             />
             <div className="w-1/2 absolute left-[50%] z-30 top-0 m-0.5 -translate-x-1/2 bg-linear-to-l from-transparent via-bg-400/10 to-transparent h-[0.6px] "></div>
           </div>
-          <div className="flex-1 flex flex-col z-0 rounded-2xl overflow-hidden bg-bg-200 ">
+          <div className="flex-1 flex flex-col z-0 rounded-2xl rounded-ss-none overflow-hidden bg-bg-200 ">
             <main className="flex-1 overflow-auto w-full  ">
               <Outlet />
             </main>

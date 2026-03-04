@@ -1,7 +1,6 @@
-import { IconAnalyze, IconLoader2, IconX } from "@tabler/icons-react";
+import { IconAnalyze, IconX } from "@tabler/icons-react";
 import "./style.css";
 import { useEffect, useRef, useState } from "react";
-import { useServices } from "@/features/services/hooks/useServices";
 import type { DoorSensorType } from "@/features/DoorSensor/types/DoorSensor.type";
 
 interface MarkerSensorProps {
@@ -57,7 +56,6 @@ const ModalSensor = ({
 }) => {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const closeBtnRef = useRef<HTMLButtonElement | null>(null);
-  const { data: services, isLoading, isError } = useServices();
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -93,8 +91,8 @@ const ModalSensor = ({
         ref={modalRef}
         className="w-full grid grid-cols-2 gap-5 rounded bg-linear-30 from-bg-100 to-bg-100 shadow-lg p-4"
       >
-        <div className="">
-          <img src="https://rest.wisensor.cl/public/imgCentros/1.jpeg" alt="" />
+        <div className=" h-70 rounded overflow-hidden">
+          <img src="/centro.png" alt="" className="object-cover" />
         </div>
         <div>
           <div className="flex justify-between items-center border-b border-border-200 pb-1">
@@ -109,7 +107,7 @@ const ModalSensor = ({
             </button>
           </div>
 
-          <div className="flex flex-col gap-2 mt-2">
+          <div className="flex flex-col gap-7 mt-2">
             <div className="flex justify-between items-center">
               <p className="text-text-200 text-xs">Estado</p>
               <p className={`text-xs font-semibold ${statusColor}`}>
@@ -136,39 +134,7 @@ const ModalSensor = ({
             </div>
           </div>
 
-          {/* Sección de servicios */}
-          <div className="mt-3 pt-2 border-t border-border-200">
-            <p className="text-text-200 text-xs uppercase tracking-wide mb-2">
-              Servicios
-            </p>
-
-            {isLoading && (
-              <div className="flex items-center gap-2 text-text-300 text-xs py-1">
-                <IconLoader2 size={14} className="animate-spin" />
-                Cargando servicios…
-              </div>
-            )}
-
-            {isError && (
-              <p className="text-red-400 text-xs py-1">
-                No se pudieron cargar los servicios.
-              </p>
-            )}
-
-            {!isLoading && !isError && services && services.length === 0 && (
-              <p className="text-text-300 text-xs py-1">
-                Sin servicios registrados.
-              </p>
-            )}
-
-            {/* {!isLoading && !isError && services && services.length > 0 && (
-            <div className="flex flex-col gap-1.5">
-              {services.map((service) => (
-                <ServiceStatusBadge key={service.id} service={service} />
-              ))}
-            </div>
-          )} */}
-          </div>
+          
         </div>
       </div>
     </div>

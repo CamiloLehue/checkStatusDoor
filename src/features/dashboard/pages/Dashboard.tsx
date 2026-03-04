@@ -88,7 +88,7 @@ function Dashboard() {
 
   return (
     <div
-      className={`w-full h-full  ${isMobile ? "flex flex-row" : "grid grid-cols-12"}`}
+      className={`w-full h-full  ${isMobile ? "flex flex-row" : "grid grid-cols-12 overflow-hidden max-h-screen"}`}
     >
       <div className="col-span-10 h-full flex flex-col w-full">
         {isLoading || statusDoors.length === 0 ? (
@@ -135,7 +135,6 @@ function Dashboard() {
                 })}`
               : ""
           }
-          overlays={<div className="bg-100 px-3">Overlays</div>}
         >
           <div className="grid grid-cols-2 divide-x divide-border-200">
             <ServiceStatusChart />
@@ -208,11 +207,7 @@ const RightBarDashboard = ({
       <RightBar
         title="Actividad"
         subTitle="Monitoreo de sensores"
-        overlays={
-          <div className="px-3 py-4  border-b border-border-200">
-            <small>Overlays</small>
-          </div>
-        }
+        
       >
         <ContentRightBar
           data={data}
