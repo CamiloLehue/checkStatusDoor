@@ -26,6 +26,7 @@ import { useServices } from "@/features/services/hooks/useServices";
 import type { ServicesType } from "@/features/services/types/services.type";
 import { ServiceStatusBadge } from "@/features/DoorSensor/components/ServiceStatusBadge";
 import AlertsCalendar from "@/features/DoorSensor/components/AlertsCalendar";
+import DisconnectionCalendar from "@/features/DoorSensor/components/DisconnectionCalendar";
 import { useHistorySensor } from "@/features/DoorSensor/hooks/useHistorySensor";
 import type { Events } from "@/features/DoorSensor/types/HistorySensor.type";
 
@@ -241,71 +242,110 @@ const ContentRightBar = ({
   loadingHistory: boolean;
   onCalendarDaySelect: (day: Date | null) => void;
 }) => {
+  const [activeTab, setActiveTab] = useState<"calendarios" | "sensores">(
+    "calendarios",
+  );
+
   return (
-    <div className="flex flex-col gap-4 p-2">
-      <div className="flex flex-col gap-1">
-        <p className="text-text-100  text-xs uppercase tracking-wide px-1 mb-1">
+    <div className="flex flex-col h-full">
+      <div className="flex border-b border-border-200 shrink-0">
+        <button
+          onClick={() => setActiveTab("calendarios")}
+          className={`flex-1 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors duration-200 ${
+            activeTab === "calendarios"
+              ? "text-text-100 border-b-2 border-brand-100 -mb-px"
+              : "text-text-200 hover:text-text-100"
+          }`}
+        >
+          Calendarios
+        </button>
+        <button
+          onClick={() => setActiveTab("sensores")}
+          className={`flex-1 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors duration-200 ${
+            activeTab === "sensores"
+              ? "text-text-100 border-b-2 border-brand-100 -mb-px"
+              : "text-text-200 hover:text-text-100"
+          }`}
+        >
           Sensores
-        </p>
-        {data.map((door) => {
-          const isOpen = door.open_status === "abierto";
-          const isSelected = selectedDoorId === door.id;
-          return (
-            <button
-              key={door.id}
-              onClick={() => onSelectDoor(door)}
-              className={`bg-bg-200 relative overflow-hidden transition-all duration-300 rounded py-2 px-4 flex justify-between items-center text-left w-full
-                ${
-                  isSelected
-                    ? "bg-bg-100 border-b border-border-200"
-                    : "hover:bg-bg-300"
-                }`}
-            >
-              <div className="flex flex-col min-w-0">
-                <small className="font-bold truncate">{door.name}</small>
-                <small className="text-xs font-bold">{door.updatedAt}</small>
+        </button>
+      </div>
 
-                <small className="text-text-200 truncate">
-                  {door.location_description}
-                </small>
-                <small
-                  className={`font-semibold text-[10px] ${
-                    isOpen ? "text-red-400" : "text-green-400"
-                  }`}
-                >
-                  {isOpen ? "Abierto" : "Cerrado"}
-                </small>
-              </div>
+      {activeTab === "calendarios" && (
+        <div className="flex flex-col gap-4 p-2">
+          <div>
+            <p className="text-text-100 text-xs uppercase tracking-wide px-1 mb-2">
+              Calendario de eventos recientes
+            </p>
+            <AlertsCalendar
+              events={historyEvents}
+              isLoading={loadingHistory}
+              onDaySelect={onCalendarDaySelect}
+            />
+          </div>
+          <div>
+            <p className="text-text-100 text-xs uppercase tracking-wide px-1 mb-2">
+              Calendario de conexión
+            </p>
+            <DisconnectionCalendar
+              events={historyEvents}
+              doors={data}
+              isLoading={loadingHistory}
+            />
+          </div>
+        </div>
+      )}
 
-              <span className="relative flex h-3 w-3 shrink-0 ml-2">
-                {!isOpen && (
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60" />
-                )}
-                <span
-                  className={`relative inline-flex rounded-full h-3 w-3 ${
-                    isOpen ? "bg-red-500" : "bg-green-400"
+      {activeTab === "sensores" && (
+        <div className="flex flex-col gap-1 p-2">
+          {data.map((door) => {
+            const isOpen = door.open_status === "abierto";
+            const isSelected = selectedDoorId === door.id;
+            return (
+              <button
+                key={door.id}
+                onClick={() => onSelectDoor(door)}
+                className={`bg-bg-200 relative overflow-hidden transition-all duration-300 rounded py-0.5 px-4 flex justify-between items-center text-left w-full
+                  ${
+                    isSelected
+                      ? "bg-bg-100 border-b border-border-200"
+                      : "hover:bg-bg-300"
                   }`}
+              >
+                <div className="flex flex-col min-w-0">
+                  <small className="font-bold truncate">{door.name}</small>
+                  <small className="text-xs font-bold">{door.updatedAt}</small>
+                  <small className="text-text-200 truncate">
+                    {door.location_description}
+                  </small>
+                  <small
+                    className={`font-semibold text-[10px] ${
+                      isOpen ? "text-red-400" : "text-green-400"
+                    }`}
+                  >
+                    {isOpen ? "Abierto" : "Cerrado"}
+                  </small>
+                </div>
+                <span className="relative flex h-3 w-3 shrink-0 ml-2">
+                  {!isOpen && (
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60" />
+                  )}
+                  <span
+                    className={`relative inline-flex rounded-full h-3 w-3 ${
+                      isOpen ? "bg-red-500" : "bg-green-400"
+                    }`}
+                  />
+                </span>
+                <div
+                  className={`absolute right-0 top-0 h-14 w-14 ${
+                    isOpen ? "bg-red-500" : "bg-green-500"
+                  } opacity-20 blur-2xl pointer-events-none`}
                 />
-              </span>
-              <div
-                className={`absolute right-0 top-0 h-14 w-14 ${
-                  isOpen ? "bg-red-500" : "bg-green-500"
-                } opacity-20 blur-2xl pointer-events-none`}
-              />
-            </button>
-          );
-        })}
-      </div>
-      <div>
-        <p className="text-text-100  text-xs uppercase tracking-wide px-1 ">
-          Calendario de eventos recientes
-        </p>
-      </div>
-      <AlertsCalendar
-        events={historyEvents}
-        isLoading={loadingHistory}
-        onDaySelect={onCalendarDaySelect}
-      />
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
@@ -323,7 +363,6 @@ const PopUpDoor = ({ data }: { data: DoorSensorType }) => {
   );
 };
 
-/* ── Tooltip servicios ── */
 const CustomServiceTooltip = ({
   active,
   payload,
@@ -351,7 +390,6 @@ const CustomServiceTooltip = ({
   );
 };
 
-/* ── Gráfico de servicios ── */
 const ServiceStatusChart = () => {
   const { data: services = [] as ServicesType[], isLoading } = useServices();
 
