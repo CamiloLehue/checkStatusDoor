@@ -133,7 +133,7 @@ function Dashboard() {
                   month: "long",
                   year: "numeric",
                 })}`
-              : "Monitoreo General"
+              : ""
           }
           overlays={<div className="bg-100 px-3">Overlays</div>}
         >
@@ -499,7 +499,7 @@ const ServiceStatusChart = () => {
       </div>
 
       <div className="flex flex-col flex-1 min-w-0 px-3 py-1">
-        <span className="text-text-100 text-[10px] uppercase tracking-wide mb-0.5">
+        <span className="text-text-100 text-[13px] uppercase tracking-wide mb-0.5">
           Estado por servicio
         </span>
         <ResponsiveContainer width="100%" height="100%">
@@ -943,8 +943,8 @@ const SensorStatusChart = ({
         return (
           <div className="flex flex-col flex-1 min-w-0 px-3 py-1">
             <div className="flex items-center justify-between mb-0.5">
-              <span className="text-text-100 text-[10px] uppercase tracking-wide">
-                Actividad en el tiempo
+              <span className="text-text-100 text-[13px] uppercase tracking-wide">
+                Aperturas y cierres recientes
               </span>
               <div className="flex items-center gap-2 flex-wrap justify-end">
                 {sensorKeys.map((k, i) => (
