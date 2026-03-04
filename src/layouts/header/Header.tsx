@@ -28,7 +28,7 @@ function Header({
         </div>
         {!isMobile && (
           <div className="absolute left-[50%] top-2 -translate-x-1/2">
-            <span className="text-2xl  text-text-200 font-secondary capitalize">
+            <span className="text-text-200  capitalize">
               {useConfigApp.NAME_APP}
             </span>
           </div>
