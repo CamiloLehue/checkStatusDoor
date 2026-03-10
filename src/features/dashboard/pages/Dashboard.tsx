@@ -204,11 +204,7 @@ const RightBarDashboard = ({
           <IconX size={20} stroke={1.5} />
         </button>
       )}
-      <RightBar
-        title="Actividad"
-        subTitle="Monitoreo de sensores"
-        
-      >
+      <RightBar title="Actividad" subTitle="Monitoreo de sensores">
         <ContentRightBar
           data={data}
           selectedDoorId={selectedDoorId}
@@ -341,6 +337,15 @@ const ContentRightBar = ({
           })}
         </div>
       )}
+
+      <div className="flex flex-col justify-center items-center">
+        <h5 className="text-xl">Creado para</h5>
+        <img
+          src="https://www.ast.cl/img/inicio/clientes-ast/salmonesautralpng.png"
+          alt="salmonesautral"
+          className="w-50  rounded-full"
+        />
+      </div>
     </div>
   );
 };
