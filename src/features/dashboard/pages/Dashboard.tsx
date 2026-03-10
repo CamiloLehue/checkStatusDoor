@@ -343,7 +343,7 @@ const ContentRightBar = ({
         <img
           src="https://www.ast.cl/img/inicio/clientes-ast/salmonesautralpng.png"
           alt="salmonesautral"
-          className="w-50  rounded-full"
+          className=" max-w-50  rounded-full"
         />
       </div>
     </div>
