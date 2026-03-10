@@ -6,6 +6,8 @@ export default function CompaniesPanel() {
     companies,
     selectedCompany,
     companyUsers,
+    assignedServices,
+    isSuperuser,
     loading,
     loadingUsers,
     error,
@@ -44,7 +46,9 @@ export default function CompaniesPanel() {
       <div>
         <h2 className="text-2xl font-bold text-text-100">Compañías</h2>
         <p className="mt-1 text-sm text-text-200">
-          Gestión y visualización de todas las compañías
+          {isSuperuser
+            ? "Gestión y visualización de todas las compañías"
+            : "Visualización de tu compañía y servicios asignados"}
         </p>
       </div>
 
@@ -183,6 +187,32 @@ export default function CompaniesPanel() {
                     </p>
                   )}
                 </div>
+
+                {!isSuperuser && (
+                  <div>
+                    <h4 className="font-semibold text-text-100 mb-2">
+                      Mis Servicios ({assignedServices.length})
+                    </h4>
+
+                    {assignedServices.length > 0 ? (
+                      <div className="space-y-2 max-h-75 overflow-y-auto">
+                        {assignedServices.map((service) => (
+                          <div
+                            key={service.id}
+                            className="bg-bg-200 border border-border p-3"
+                          >
+                            <p className="font-medium text-text-100">{service.name}</p>
+                            <p className="text-xs text-text-200 mt-1">{service.code}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-text-200">
+                        No tienes servicios asignados
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </>
           ) : (
